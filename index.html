@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSDN // TECTONIC ARCHITECTURE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian-deep: #050506;
+            --obsidian-plate: #111113;
+            --obsidian-glint: #1c1c1f;
+            --plasma-cyan: #00f3ff;
+            --plasma-dim: rgba(0, 243, 255, 0.15);
+            --text-main: #e0e0e0;
+            --text-dim: #666666;
+            --font-sans: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --border-glow: rgba(255, 255, 255, 0.05);
+            --transition-swift: 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+            --transition-heavy: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            background-color: var(--obsidian-deep);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            min-height: 100vh;
+            line-height: 1.4;
+        }
+
+        /* Noise Overlays */
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .vignette {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 150%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--plasma-cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--plasma-cyan);
+            transition: width 0.2s, height 0.2s, background 0.2s;
+        }
+
+        #cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--plasma-dim);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.15s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        /* Layout Architecture */
+        .tectonic-container {
+            display: grid;
+            grid-template-columns: 120px 1fr 400px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Left Rail: Navigation */
+        .rail-left {
+            border-right: 1px solid var(--border-glow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0;
+            background: rgba(5, 5, 6, 0.5);
+            backdrop-filter: blur(20px);
+            z-index: 20;
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -1px;
+            color: var(--plasma-cyan);
+            text-orientation: mixed;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .nav-item {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-decoration: none;
+            transition: var(--transition-swift);
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            transform: rotate(180deg) translateY(10px);
+        }
+
+        /* Main Section */
+        .main-view {
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 100px;
+            z-index: 10;
+        }
+
+        .hero-block {
+            max-width: 800px;
+        }
+
+        .label-mono {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--plasma-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .title-massive {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            line-height: 0.9;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+        }
+
+        .title-massive span {
+            color: transparent;
+            -webkit-text-stroke: 1px var(--text-dim);
+            display: block;
+        }
+
+        /* Tectonic Plates (Cards) */
+        .plate-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+
+        .fracture-plate {
+            position: relative;
+            background: var(--obsidian-plate);
+            padding: 40px;
+            border-left: 1px solid var(--border-glow);
+            border-top: 1px solid var(--border-glow);
+            transition: var(--transition-heavy);
+            overflow: hidden;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+        }
+
+        .fracture-plate::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--plasma-dim);
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+            transition: var(--transition-swift);
+        }
+
+        .fracture-plate:hover {
+            transform: translateY(-10px) translateX(10px);
+            background: var(--obsidian-glint);
+            box-shadow: -20px 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .fracture-plate:hover::after {
+            background: var(--plasma-cyan);
+        }
+
+        .plate-id {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .plate-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .plate-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 300px;
+        }
+
+        .plate-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--plasma-cyan);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            text-decoration: none;
+        }
+
+        .plate-action::before {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: var(--plasma-cyan);
+        }
+
+        /* Right Panel: Data Stats */
+        .panel-right {
+            background: var(--obsidian-plate);
+            border-left: 1px solid var(--border-glow);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            z-index: 20;
+        }
+
+        .stat-group {
+            border-bottom: 1px solid var(--border-glow);
+            padding-bottom: 30px;
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 300;
+            font-family: var(--font-sans);
+        }
+
+        .stat-bar {
+            width: 100%;
+            height: 2px;
+            background: #1a1a1b;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--plasma-cyan);
+            width: 65%;
+            box-shadow: 0 0 10px var(--plasma-cyan);
+        }
+
+        /* Tectonic Background Elements */
+        .tectonic-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .line {
+            position: absolute;
+            background: var(--border-glow);
+        }
+
+        .line-h { width: 100%; height: 1px; left: 0; }
+        .line-v { height: 100%; width: 1px; top: 0; }
+
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20vh;
+            background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.03), transparent);
+            z-index: 100;
+            pointer-events: none;
+            animation: scan 10s linear infinite;
+        }
+
+        @media (max-width: 1200px) {
+            .tectonic-container {
+                grid-template-columns: 80px 1fr;
+            }
+            .panel-right {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .plate-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-view {
+                padding: 40px 20px;
+            }
+            .rail-left {
+                display: none;
+            }
+            .tectonic-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grain-overlay"></div>
+    <div class="vignette"></div>
+    <div class="scanline"></div>
+    <div id="cursor"></div>
+    <div id="cursor-follower"></div>
+
+    <div class="tectonic-bg">
+        <div class="line line-h" style="top: 20%;"></div>
+        <div class="line line-h" style="top: 60%;"></div>
+        <div class="line line-v" style="left: 40%;"></div>
+        <div class="line line-v" style="left: 80%;"></div>
+    </div>
+
+    <div class="tectonic-container">
+        <!-- Sidebar Navigation -->
+        <aside class="rail-left">
+            <div class="logo">OBSDN // PROTOCOL</div>
+            <nav class="nav-links">
+                <a href="#" class="nav-item">Core</a>
+                <a href="#" class="nav-item">Fracture</a>
+                <a href="#" class="nav-item">Nodes</a>
+                <a href="#" class="nav-item">Status</a>
+            </nav>
+            <div class="nav-item" style="color: var(--plasma-cyan);">V.2.04</div>
+        </aside>
+
+        <!-- Main Viewport -->
+        <main class="main-view">
+            <section class="hero-block">
+                <span class="label-mono">System Initialization</span>
+                <h1 class="title-massive">
+                    Brutalist<span>Obsidian</span>Tectonics
+                </h1>
+            </section>
+
+            <section class="plate-grid">
+                <article class="fracture-plate">
+                    <div class="plate-id">
+                        <span>0x882 / ARCH</span>
+                        <span>ACTIVE_NODE</span>
+                    </div>
+                    <h2 class="plate-title">Neural Lattice</h2>
+                    <p class="plate-desc">High-density computing layers forged in synthetic obsidian for zero-latency neural routing.</p>
+                    <a href="#" class="plate-action">Initialize Access</a>
+                </article>
+
+                <article class="fracture-plate" style="margin-top: 40px;">
+                    <div class="plate-id">
+                        <span>0xAF1 / SYNC</span>
+                        <span>STABLE_RECON</span>
+                    </div>
+                    <h2 class="plate-title">Void Vault</h2>
+                    <p class="plate-desc">Encrypted data storage utilizing quantum tunneling through monolithic obsidian structures.</p>
+                    <a href="#" class="plate-action">Decrypt Vault</a>
+                </article>
+
+                <article class="fracture-plate">
+                    <div class="plate-id">
+                        <span>0xBC9 / CORE</span>
+                        <span>OPTIMIZED</span>
+                    </div>
+                    <h2 class="plate-title">Tectonic Sync</h2>
+                    <p class="plate-desc">Sub-surface protocol management for distributed ledger systems across tectonic boundaries.</p>
+                    <a href="#" class="plate-action">Sync Stream</a>
+                </article>
+
+                <article class="fracture-plate" style="margin-top: -40px;">
+                    <div class="plate-id">
+                        <span>0xFFE / CTRL</span>
+                        <span>OVERRIDE</span>
+                    </div>
+                    <h2 class="plate-title">Plasma Core</h2>
+                    <p class="plate-desc">High-energy containment unit for the primary system processing matrix.</p>
+                    <a href="#" class="plate-action">Monitor Heat</a>
+                </article>
+            </section>
+        </main>
+
+        <!-- Data Panel -->
+        <aside class="panel-right">
+            <div class="stat-group">
+                <span class="stat-label">System Pressure</span>
+                <div class="stat-value">1,442 <span style="font-size: 1rem; color: var(--text-dim);">hPa</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" style="width: 78%;"></div></div>
+            </div>
+
+            <div class="stat-group">
+                <span class="stat-label">Core Stability</span>
+                <div class="stat-value">99.98<span style="font-size: 1rem; color: var(--text-dim);">%</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" style="width: 99.9%;"></div></div>
+            </div>
+
+            <div class="stat-group">
+                <span class="stat-label">Neural Load</span>
+                <div class="stat-value">0.12 <span style="font-size: 1rem; color: var(--text-dim);">ms</span></div>
+                <div class="stat-bar"><div class="stat-bar-fill" style="width: 22%;"></div></div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <span class="stat-label">Log_Feed</span>
+                <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); line-height: 2;">
+                    [12:04:12] PLATE_01 ALIGNED<br>
+                    [12:05:44] NEURAL_SYNC SUCCESSFUL<br>
+                    [12:09:01] THERMAL_VENT OPENED<br>
+                    [12:12:33] OBSIDIAN_LOAD: NOMINAL
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const cursor = document.getElementById('cursor');
+        const follower = document.getElementById('cursor-follower');
+        const plates = document.querySelectorAll('.fracture-plate');
+
+        document.addEventListener('mousemove', (e) => {
+            const { clientX: x, clientY: y } = e;
+            
+            // Cursor movement
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
+            
+            // Follower movement
+            follower.style.left = x + 'px';
+            follower.style.top = y + 'px';
+
+            // Parallax effect for plates
+            plates.forEach((plate, index) => {
+                const rect = plate.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const distanceX = (x - centerX) / 30;
+                const distanceY = (y - centerY) / 30;
+                
+                if (Math.abs(x - centerX) < 400 && Math.abs(y - centerY) < 400) {
+                    plate.style.transform = `translate(${distanceX}px, ${distanceY}px) scale(1.02)`;
+                } else {
+                    plate.style.transform = `translate(0, 0) scale(1)`;
+                }
+            });
+        });
+
+        // Hover interactions
+        const interactables = document.querySelectorAll('a, .fracture-plate');
+        interactables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.style.width = '20px';
+                cursor.style.height = '20px';
+                cursor.style.background = 'transparent';
+                cursor.style.border = '1px solid var(--plasma-cyan)';
+                follower.style.width = '60px';
+                follower.style.height = '60px';
+                follower.style.borderColor = 'var(--plasma-cyan)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.style.width = '8px';
+                cursor.style.height = '8px';
+                cursor.style.background = 'var(--plasma-cyan)';
+                cursor.style.border = 'none';
+                follower.style.width = '40px';
+                follower.style.height = '40px';
+                follower.style.borderColor = 'var(--plasma-dim)';
+            });
+        });
+
+        // Random stat flicker
+        setInterval(() => {
+            const fills = document.querySelectorAll('.stat-bar-fill');
+            fills.forEach(fill => {
+                if (Math.random() > 0.8) {
+                    fill.style.opacity = '0.5';
+                    setTimeout(() => fill.style.opacity = '1', 50);
+                }
+            });
+        }, 1000);
+    </script>
+</body>
+</html>
